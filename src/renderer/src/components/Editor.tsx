@@ -8,7 +8,9 @@ import { syntaxHighlighting, HighlightStyle } from '@codemirror/language'
 import { tags } from '@lezer/highlight'
 import Breadcrumb from './Breadcrumb'
 import MarkdownToolbar from './MarkdownToolbar'
+import MarkdownPreview from './MarkdownPreview'
 import type { MdCommand } from '../lib/markdown-commands'
+import { renderMarkdownToHtml, htmlToPlainText } from '../lib/render-markdown'
 
 interface Props {
   path: string
@@ -66,6 +68,24 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
   const applyingExternal = useRef(false)
   const [saved, setSaved] = useState(true)
   const [diskConflict, setDiskConflict] = useState(false)
+  const [mode, setMode] = useState<'edit' | 'preview'>('edit')
+  const [previewHtml, setPreviewHtml] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  // Reset to edit mode when switching files.
+  useEffect(() => setMode('edit'), [path])
+
+  const enterPreview = (): void => {
+    const view = viewRef.current
+    if (view) setPreviewHtml(renderMarkdownToHtml(view.state.doc.toString()))
+    setMode('preview')
+  }
+
+  const copyPreview = (): void => {
+    window.api.copyHtml(previewHtml, htmlToPlainText(previewHtml))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   const runCommand = (cmd: MdCommand): void => {
     const view = viewRef.current
@@ -149,6 +169,7 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
     lastSaved.current = content
     setSaved(true)
     setDiskConflict(false)
+    if (mode === 'preview') setPreviewHtml(renderMarkdownToHtml(content))
   }
 
   // The file changed on disk (e.g. the AI edited it). Reload if the user has no
@@ -166,22 +187,39 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
     <div className="editor">
       <div className="editor-header">
         <Breadcrumb path={path} onOpenPrompt={onOpenPrompt} />
-        {diskConflict ? (
-          <button
-            className="disk-conflict"
-            title="This file changed on disk. Click to load the new version (discards your unsaved edits)."
-            onClick={() => applyDiskContent(initialContent)}
-          >
-            ⟳ changed on disk — reload
-          </button>
-        ) : (
-          <span className={`save-indicator ${saved ? 'saved' : 'dirty'}`}>
-            {saved ? 'saved' : '●'}
-          </span>
-        )}
+        <div className="editor-header-actions">
+          {mode === 'preview' ? (
+            <>
+              <button className="editor-mode-btn" onClick={copyPreview}>
+                {copied ? '✓ copied' : 'Copy HTML'}
+              </button>
+              <button className="editor-mode-btn" onClick={() => setMode('edit')}>
+                ✎ Edit
+              </button>
+            </>
+          ) : (
+            <button className="editor-mode-btn" title="View the final rendered document" onClick={enterPreview}>
+              👁 Preview
+            </button>
+          )}
+          {diskConflict ? (
+            <button
+              className="disk-conflict"
+              title="This file changed on disk. Click to load the new version (discards your unsaved edits)."
+              onClick={() => applyDiskContent(initialContent)}
+            >
+              ⟳ changed on disk — reload
+            </button>
+          ) : (
+            <span className={`save-indicator ${saved ? 'saved' : 'dirty'}`}>
+              {saved ? 'saved' : '●'}
+            </span>
+          )}
+        </div>
       </div>
-      <div className="editor-body" ref={containerRef} />
-      <MarkdownToolbar onRun={runCommand} />
+      <div className="editor-body" style={{ display: mode === 'edit' ? undefined : 'none' }} ref={containerRef} />
+      {mode === 'preview' && <MarkdownPreview html={previewHtml} />}
+      {mode === 'edit' && <MarkdownToolbar onRun={runCommand} />}
     </div>
   )
 }

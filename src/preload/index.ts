@@ -45,6 +45,10 @@ const api = {
   loadHistory: (project: string): Promise<HistoryEntry[]> =>
     ipcRenderer.invoke('history:load', project),
 
+  // --- Clipboard ---
+  copyHtml: (html: string, text: string): Promise<void> =>
+    ipcRenderer.invoke('clipboard:write-html', html, text),
+
   // --- Content versioning ---
   gitStatus: (): Promise<GitStatus> => ipcRenderer.invoke('git:status'),
   gitSave: (): Promise<GitStatus> => ipcRenderer.invoke('git:save'),

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell, dialog, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, shell, dialog, Menu, clipboard } from 'electron'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { watch, type FSWatcher } from 'chokidar'
@@ -177,6 +177,12 @@ function registerIpc(): void {
   ipcMain.handle('agent:cancel', (_e, requestId: string) => {
     agentRuns.get(requestId)?.abort()
     agentRuns.delete(requestId)
+  })
+
+  // Writes both HTML and a plain-text fallback so the target app (e.g. WordPress's
+  // rich-text editor) picks up formatting, while plain-text paste targets still work.
+  ipcMain.handle('clipboard:write-html', (_e, html: string, text: string) => {
+    clipboard.write({ html, text })
   })
 
   ipcMain.handle('log:path', () => logPath())
