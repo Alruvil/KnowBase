@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(head -40 /home/alejandro/.npm/_logs/2026-07-07T09_07_13_645Z-eresolve-report.txt)",
+      "Bash(sleep 5; tail -3 /tmp/claude-1000/-home-alejandro-Projects-knowledge-app/2d381bc8-5dab-4771-8cc3-2e2c191b03d0/tasks/bfxs74a96.output; pgrep -f \"electron.*knowledge-app\" > /dev/null && echo \"ELECTRON RUNNING\" || echo \"ELECTRON EXITED\"; ls ~/Knowledge 2>/dev/null && echo \"ROOT CREATED\")",
+      "WebSearch"
+    ]
+  }
+}

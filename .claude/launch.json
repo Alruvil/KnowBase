@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "em-companion-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/home/alejandro/Projects/em-companion", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

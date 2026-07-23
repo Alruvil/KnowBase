@@ -1,0 +1,1085 @@
+/* Catppuccin-Mocha-inspired dark theme */
+:root {
+  --bg: #1e1e2e;
+  --bg-sidebar: #181825;
+  --bg-panel: #11111b;
+  --bg-hover: #313244;
+  --bg-active: #45475a;
+  --border: #313244;
+  --text: #cdd6f4;
+  --text-dim: #7f849c;
+  --text-faint: #585b70;
+  --accent: #89b4fa;
+  --accent-soft: rgba(137, 180, 250, 0.15);
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --mauve: #cba6f7;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Ubuntu', 'Cantarell', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- Layout ---------- */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---------- Content status bar ---------- */
+
+.statusbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 26px;
+  padding: 0 12px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.statusbar-label {
+  color: var(--text-faint);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sb-clean {
+  color: var(--text-faint);
+}
+
+.sb-dirty {
+  color: var(--yellow);
+}
+
+.sb-btn {
+  padding: 2px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.sb-btn:hover {
+  background: var(--bg-hover);
+}
+
+.sb-btn.danger {
+  color: var(--red);
+  border-color: transparent;
+}
+
+.sb-btn.danger:hover {
+  background: rgba(243, 139, 168, 0.15);
+}
+
+.sidebar {
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.editor-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.console-pane {
+  flex-shrink: 0;
+  background: var(--bg-panel);
+}
+
+.splitter {
+  flex-shrink: 0;
+  background: var(--border);
+  transition: background 0.15s;
+  z-index: 5;
+}
+
+.splitter:hover {
+  background: var(--accent);
+}
+
+.splitter-v {
+  width: 3px;
+  cursor: col-resize;
+}
+
+.splitter-h {
+  height: 3px;
+  cursor: row-resize;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+}
+
+/* ---------- Sidebar / file tree ---------- */
+
+.file-tree {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-title {
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.icon-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.icon-button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.tree-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 4px;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tree-item:hover {
+  background: var(--bg-hover);
+}
+
+.tree-item.selected {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tree-item .chevron {
+  width: 12px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.tree-item .icon {
+  width: 14px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.tree-item.project > .icon,
+.tree-item.project > .label {
+  color: var(--mauve);
+  font-weight: 600;
+}
+
+.tree-item .label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Per-row action buttons: config cog + new file/folder */
+.tree-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.tree-act {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-act:hover {
+  background: var(--bg-active);
+  color: var(--text);
+}
+
+.tree-act.cog.active {
+  color: var(--accent);
+}
+
+.tree-act.hover-only {
+  opacity: 0;
+}
+
+.tree-item:hover .tree-act.hover-only {
+  opacity: 1;
+}
+
+.tree-edit input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 2px 6px;
+  font: inherit;
+  outline: none;
+}
+
+.tree-empty {
+  padding: 16px 12px;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 160px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.context-menu button:hover {
+  background: var(--bg-hover);
+}
+
+.context-menu button.danger:hover {
+  background: rgba(243, 139, 168, 0.15);
+  color: var(--red);
+}
+
+/* ---------- Editor ---------- */
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.save-indicator {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.save-indicator.saved {
+  color: var(--text-faint);
+}
+
+.save-indicator.dirty {
+  color: var(--yellow);
+}
+
+/* Breadcrumb trail in the editor header */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.crumb-name {
+  color: var(--text-dim);
+}
+
+.crumb-cog {
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crumb-cog:hover {
+  background: var(--bg-active);
+  color: var(--accent);
+}
+
+.crumb-sep {
+  color: var(--text-faint);
+  margin: 0 5px;
+}
+
+.crumb.leaf {
+  color: var(--text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crumb.leaf.is-config {
+  color: var(--mauve);
+}
+
+.crumb-cog-inline {
+  margin-right: 4px;
+  color: var(--mauve);
+}
+
+.editor-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-body .cm-editor {
+  height: 100%;
+}
+
+/* Markdown live styling */
+.cm-h1 {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.cm-h2 {
+  font-size: 1.35em;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.cm-h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.cm-h4 {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.cm-link {
+  color: var(--mauve);
+}
+
+.cm-url {
+  color: var(--text-faint);
+  text-decoration: underline;
+}
+
+.cm-inline-code {
+  font-family: inherit;
+  background: var(--bg-panel);
+  border-radius: 3px;
+  padding: 0 3px;
+  color: var(--green);
+}
+
+.cm-quote {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.cm-marker {
+  color: var(--text-faint);
+}
+
+.cm-hr {
+  color: var(--text-faint);
+}
+
+/* ---------- Console ---------- */
+
+.console {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.console-context {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-faint);
+}
+
+.console-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.console-msg {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.console-msg.system {
+  color: var(--text-faint);
+}
+
+.console-msg.user .console-role {
+  color: var(--accent);
+}
+
+.console-msg.assistant .console-role {
+  color: var(--mauve);
+}
+
+.console-role {
+  flex-shrink: 0;
+}
+
+.console-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.console-input-row {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* @-mention file picker, floats above the input */
+.mention-popup {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 14px;
+  right: 14px;
+  z-index: 40;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.mention-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 9px;
+  border-radius: 5px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mention-item.active,
+.mention-item:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.console-msg.diff .console-role {
+  color: var(--green);
+}
+
+.console-msg.diff .console-text {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 9px;
+  white-space: pre-wrap;
+}
+
+.console-msg.meta {
+  justify-content: flex-end;
+}
+
+.console-msg.meta .console-role {
+  display: none;
+}
+
+.console-msg.meta .console-text {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.disk-conflict {
+  color: var(--yellow);
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.disk-conflict:hover {
+  background: rgba(249, 226, 175, 0.14);
+}
+
+.console-input {
+  flex: 1;
+  resize: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.console-input:focus {
+  border-color: var(--accent);
+}
+
+.console-send {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.console-send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.console-send:not(:disabled):hover {
+  background: rgba(137, 180, 250, 0.25);
+}
+
+/* ---------- Markdown toolbar ---------- */
+
+.md-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-sidebar);
+  overflow-x: auto;
+}
+
+.md-btn {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 5px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.md-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.md-caret {
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+.md-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.md-dropdown {
+  position: relative;
+}
+
+.md-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  min-width: 170px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.md-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.md-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+.md-menu-hint {
+  color: var(--text-faint);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+}
+
+/* ---------- Console scope bar ---------- */
+
+.console-scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.scope-label {
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.scope-crumbs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.scope-crumb {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.scope-crumb button {
+  color: var(--text-dim);
+  padding: 1px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.scope-crumb button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.scope-crumb button.scope-current {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.scope-sep {
+  color: var(--text-faint);
+  margin: 0 3px;
+}
+
+.scope-follow {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--yellow);
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.scope-follow:hover {
+  background: rgba(249, 226, 175, 0.12);
+}
+
+.console-blocked {
+  padding: 14px;
+  margin: 10px 14px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--text-faint);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.console-settings {
+  color: var(--text-dim);
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+.console-settings:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.console-msg.tool .console-role,
+.console-msg.tool .console-text {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.console-msg.error .console-role,
+.console-msg.error .console-text {
+  color: var(--red);
+}
+
+.console-msg.thinking .console-text {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.console-send.cancel {
+  background: rgba(243, 139, 168, 0.15);
+  color: var(--red);
+}
+
+.console-send.cancel:hover {
+  background: rgba(243, 139, 168, 0.28);
+}
+
+/* ---------- Settings modal ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  width: 460px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 60px);
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.modal-close {
+  color: var(--text-dim);
+  font-size: 15px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.modal-close:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 16px 18px;
+}
+
+.modal-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.auth-option {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.auth-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.auth-option input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.auth-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.auth-option-label {
+  font-weight: 600;
+}
+
+.auth-option-help {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.auth-token {
+  margin: 10px 0 4px;
+}
+
+.auth-token input {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.auth-token input:focus {
+  border-color: var(--accent);
+}
+
+.model-select {
+  width: 100%;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.model-select:focus {
+  border-color: var(--accent);
+}
+
+.auth-note {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.auth-note.dim {
+  color: var(--text-faint);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-saved {
+  margin-right: auto;
+  color: var(--green);
+  font-size: 13px;
+}
+
+.log-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.log-path {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--green);
+}
+
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.modal-btn:hover {
+  background: var(--bg-hover);
+}
+
+.modal-btn.primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.modal-btn.primary:hover {
+  background: rgba(137, 180, 250, 0.25);
+}
