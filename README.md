@@ -111,6 +111,7 @@ src/
 │   ├── history-service.ts  # per-project conversation persistence
 │   ├── git-service.ts      # content versioning (checkpoint / diff / revert)
 │   ├── numstat.ts          # pure git-numstat parser
+│   ├── index-service.ts    # _index.md diffing (mtime-based) and update-prompt builder
 │   ├── settings.ts         # root dir, auth mode/token, model
 │   └── logger.ts           # file logger (~/.config/knowledge-app/knowledge-app.log)
 ├── preload/      # typed contextBridge API (window.api)
@@ -137,6 +138,7 @@ Unit tests (vitest) cover the pure, regression-prone logic:
 - `prompt-service.composeSystemPrompt` — cascade order
 - `mention.detectMention` — `@`-reference parsing
 - `render-markdown` — markdown → HTML (headings, links, GFM tables) and HTML → plain text
+- `index-service` — `_index.md` parsing and the mtime-based changed/unchanged/removed diff
 
 ```bash
 npm test          # run once
@@ -156,11 +158,11 @@ npm run test:watch
 
 - **Subscription auth is for individual use** — each person runs the app with their own Claude login or API key. Don't route multiple users through one subscription.
 - **Save/Revert are global** to the whole content repo, not per-project. Because a checkpoint is committed before every AI call, the revert window is normally just the latest turn plus any unsaved manual edits.
-- **Indexes** (`_index.md`) are referenced by the assistant when present but are not yet auto-generated.
+- **Indexes are per-folder and non-recursive** — a folder's `_index.md` covers only files directly in it, not subfolders (each subfolder has its own).
 
 ## Roadmap
 
-- `_index.md` generation and index-first retrieval
+- Index-first retrieval in the console (already instructed to prefer `_index.md`; not yet exercised at scale)
 - Packaging for distribution (bundle the Agent SDK binary via `asarUnpack`)
 - Jira integration and project-status reports (via MCP)
 - Optional per-project content versioning

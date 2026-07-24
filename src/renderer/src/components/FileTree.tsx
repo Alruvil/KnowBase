@@ -8,6 +8,7 @@ interface Props {
   selectedPath: string | null
   onSelectFile: (path: string) => void
   onOpenPrompt: (folderPath: string) => void
+  onUpdateIndex: (folderPath: string) => void
   onDeleted: (path: string) => void
   onRenamed: (oldPath: string, newPath: string) => void
 }
@@ -36,6 +37,7 @@ export default function FileTree({
   selectedPath,
   onSelectFile,
   onOpenPrompt,
+  onUpdateIndex,
   onDeleted,
   onRenamed
 }: Props): React.JSX.Element {
@@ -162,6 +164,16 @@ export default function FileTree({
               </button>
               <button
                 className="tree-act hover-only"
+                title="Update index (_index.md)"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onUpdateIndex(node.path)
+                }}
+              >
+                🗂
+              </button>
+              <button
+                className="tree-act hover-only"
                 title="New file"
                 onClick={(e) => {
                   e.stopPropagation()
@@ -266,6 +278,14 @@ export default function FileTree({
                 }}
               >
                 Edit AI prompt
+              </button>
+              <button
+                onClick={() => {
+                  setMenu(null)
+                  onUpdateIndex(menu.node!.path)
+                }}
+              >
+                Update index
               </button>
             </>
           )}

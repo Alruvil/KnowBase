@@ -44,6 +44,8 @@ const api = {
   // --- History ---
   loadHistory: (project: string): Promise<HistoryEntry[]> =>
     ipcRenderer.invoke('history:load', project),
+  buildIndexPrompt: (folder: string): Promise<string> =>
+    ipcRenderer.invoke('index:build-prompt', folder),
 
   // --- Clipboard ---
   copyHtml: (html: string, text: string): Promise<void> =>

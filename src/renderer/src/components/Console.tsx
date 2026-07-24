@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import type { AgentEventPayload } from '@shared/types'
 import { detectMention } from '../lib/mention'
 
+/** A prompt to send automatically once the console is scoped to `folder`. */
+export interface PendingPrompt {
+  folder: string
+  text: string
+}
+
 interface Props {
   /** Folder the AI runs under ('' = whole knowledge base / root) */
   contextFolder: string
@@ -9,6 +15,9 @@ interface Props {
   fileFolder: string
   /** Files under the current scope, relative to it — offered for "@" references. */
   scopeFiles: string[]
+  /** A prompt (e.g. "update index") to auto-send once scoped correctly. */
+  pendingPrompt: PendingPrompt | null
+  onPendingPromptHandled: () => void
   onChangeContext: (folder: string) => void
   onOpenSettings: () => void
 }
@@ -43,6 +52,8 @@ export default function Console({
   contextFolder,
   fileFolder,
   scopeFiles,
+  pendingPrompt,
+  onPendingPromptHandled,
   onChangeContext,
   onOpenSettings
 }: Props): React.JSX.Element {
@@ -159,14 +170,16 @@ export default function Console({
     })
   }
 
-  const send = async (): Promise<void> => {
-    const text = input.trim()
+  const send = async (override?: string): Promise<void> => {
+    const text = (override ?? input).trim()
     if (!text || atRoot || running) return
     const requestId = uid()
     runningReq.current = requestId
     assistantId.current = null
-    setInput('')
-    setMention(null)
+    if (override === undefined) {
+      setInput('')
+      setMention(null)
+    }
     setMessages((prev) => [...prev, { id: uid(), role: 'user', text }])
     setRunning(true)
     try {
@@ -178,6 +191,16 @@ export default function Console({
       }
     }
   }
+
+  // Fire an externally-requested prompt (e.g. "update index") once the console
+  // is actually scoped to its target folder and not mid-turn.
+  useEffect(() => {
+    if (!pendingPrompt || pendingPrompt.folder !== contextFolder || running) return
+    onPendingPromptHandled()
+    send(pendingPrompt.text)
+    // `send` is stable enough here — it only closes over state read at call time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPrompt, contextFolder, running])
 
   const cancel = (): void => {
     if (runningReq.current) window.api.agentCancel(runningReq.current)
@@ -333,7 +356,7 @@ export default function Console({
               Stop
             </button>
           ) : (
-            <button className="console-send" onClick={send} disabled={!input.trim()}>
+            <button className="console-send" onClick={() => send()} disabled={!input.trim()}>
               Send
             </button>
           )}

@@ -37,7 +37,21 @@ introduction, requirements, and getting started.
 - Every folder/project has a **⚙ cog** (in the tree and the breadcrumb) that opens its
   `_prompt.md` — instructions for the AI at that level. These cascade **root → project →
   folder** into the assistant's system prompt.
-- `_prompt.md` and `_index.md` are hidden from the tree (managed through the cog).
+- `_prompt.md` and `_index.md` are hidden from the tree (managed through the cog / tree
+  actions instead).
+
+## Indexes (`_index.md`)
+
+- Every folder has a **🗂 Update index** action (hover the folder row, or right-click) that
+  asks the AI to build or refresh that folder's `_index.md` — a one-line-per-file summary
+  (`- \`file.md\` — description.`), non-recursive.
+- **Token-frugal by design**: the app diffs the folder against the existing index by file
+  modification time *before* asking the AI anything. Unchanged files are handed to the AI as
+  already-correct descriptions — it never re-reads them. Only new or changed files get
+  actually read and described, and removed files are dropped. This is what keeps updates
+  cheap as a folder grows toward dozens or hundreds of files.
+- The AI console already prefers checking `_index.md` (when present) over reading every file
+  when it needs to find something relevant — see **AI console** below.
 
 ## AI console
 

@@ -18,6 +18,7 @@ import { runAgent } from './agent-service'
 import { loadHistory, appendHistory, type HistoryEntry } from './history-service'
 import { initLogger, logPath, log } from './logger'
 import * as gitService from './git-service'
+import { buildIndexUpdatePrompt } from './index-service'
 
 let mainWindow: BrowserWindow | null = null
 let watcher: FSWatcher | null = null
@@ -127,6 +128,7 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('history:load', (_e, project: string) => loadHistory(rootDir, project))
+  ipcMain.handle('index:build-prompt', (_e, folder: string) => buildIndexUpdatePrompt(rootDir, folder))
 
   // Streaming agent turn. Events are pushed to the renderer as `agent:event`.
   ipcMain.handle(

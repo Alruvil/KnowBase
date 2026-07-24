@@ -3,7 +3,7 @@ import type { FileNode, GitStatus } from '@shared/types'
 import { HIDDEN_FILES, PROMPT_TEMPLATE, promptPath } from '@shared/types'
 import FileTree from './components/FileTree'
 import Editor from './components/Editor'
-import Console from './components/Console'
+import Console, { type PendingPrompt } from './components/Console'
 import SettingsModal from './components/SettingsModal'
 import StatusBar from './components/StatusBar'
 
@@ -24,6 +24,7 @@ export default function App(): React.JSX.Element {
   const [consoleHeight, setConsoleHeight] = useState(220)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [git, setGit] = useState<GitStatus>({ enabled: false, dirty: false, files: 0 })
+  const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null)
 
   const fileFolder = folderOf(selectedPath)
   const selectedRef = useRef<string | null>(null)
@@ -112,6 +113,13 @@ export default function App(): React.JSX.Element {
     [openFile]
   )
 
+  /** Compute a token-frugal reindex prompt and route it through the console. */
+  const requestIndexUpdate = useCallback(async (folderPath: string) => {
+    const text = await window.api.buildIndexPrompt(folderPath)
+    setContextFolder(folderPath)
+    setPendingPrompt({ folder: folderPath, text })
+  }, [])
+
   const closeIfSelected = (path: string): void => {
     setSelectedPath((current) => {
       if (current && (current === path || current.startsWith(path + '/'))) {
@@ -160,6 +168,7 @@ export default function App(): React.JSX.Element {
           selectedPath={selectedPath}
           onSelectFile={openFile}
           onOpenPrompt={openPrompt}
+          onUpdateIndex={requestIndexUpdate}
           onDeleted={closeIfSelected}
           onRenamed={(oldPath, newPath) => {
             if (selectedPath === oldPath) {
@@ -189,6 +198,8 @@ export default function App(): React.JSX.Element {
             contextFolder={contextFolder}
             fileFolder={fileFolder}
             scopeFiles={scopeFiles}
+            pendingPrompt={pendingPrompt}
+            onPendingPromptHandled={() => setPendingPrompt(null)}
             onChangeContext={setContextFolder}
             onOpenSettings={() => setSettingsOpen(true)}
           />

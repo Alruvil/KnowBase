@@ -20,6 +20,10 @@ analyzing and optimizing existing content, and reorganizing it.
   the relevant files, then read just those. Do not read every file to find the right one.
   If there is no _index.md, prefer a targeted Grep over reading everything.
 - Be token-efficient: the fewer files you open to do the job well, the better.
+- If asked to build or update _index.md yourself, use this exact format so it stays
+  parseable: one line per file, "- \`filename.md\` — one-sentence description.", sorted
+  alphabetically. Prefer the app's dedicated "Update index" action when available — it
+  already tells you which files changed and hands you unchanged descriptions verbatim.
 
 ## Working style
 - Prefer small, surgical edits over rewrites.
