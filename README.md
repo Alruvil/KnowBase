@@ -111,7 +111,7 @@ src/
 │   ├── history-service.ts  # per-project conversation persistence
 │   ├── git-service.ts      # content versioning (checkpoint / diff / revert)
 │   ├── numstat.ts          # pure git-numstat parser
-│   ├── index-service.ts    # _index.md diffing (mtime-based) and update-prompt builder
+│   ├── index-service.ts    # _index.json diffing (mtime-based) and update-prompt builder
 │   ├── settings.ts         # root dir, auth mode/token, model
 │   └── logger.ts           # file logger (~/.config/knowledge-app/knowledge-app.log)
 ├── preload/      # typed contextBridge API (window.api)
@@ -138,7 +138,7 @@ Unit tests (vitest) cover the pure, regression-prone logic:
 - `prompt-service.composeSystemPrompt` — cascade order
 - `mention.detectMention` — `@`-reference parsing
 - `render-markdown` — markdown → HTML (headings, links, GFM tables) and HTML → plain text
-- `index-service` — `_index.md` parsing and the mtime-based changed/unchanged/removed diff
+- `index-service` — `_index.json` parsing and the mtime-based changed/unchanged/removed diff
 
 ```bash
 npm test          # run once
@@ -158,11 +158,11 @@ npm run test:watch
 
 - **Subscription auth is for individual use** — each person runs the app with their own Claude login or API key. Don't route multiple users through one subscription.
 - **Save/Revert are global** to the whole content repo, not per-project. Because a checkpoint is committed before every AI call, the revert window is normally just the latest turn plus any unsaved manual edits.
-- **Indexes are per-folder and non-recursive** — a folder's `_index.md` covers only files directly in it, not subfolders (each subfolder has its own).
+- **Indexes are per-folder and non-recursive** — a folder's `_index.json` covers only files directly in it, not subfolders (each subfolder has its own).
 
 ## Roadmap
 
-- Index-first retrieval in the console (already instructed to prefer `_index.md`; not yet exercised at scale)
+- Index-first retrieval in the console (already instructed to prefer `_index.json`; not yet exercised at scale)
 - Packaging for distribution (bundle the Agent SDK binary via `asarUnpack`)
 - Jira integration and project-status reports (via MCP)
 - Optional per-project content versioning

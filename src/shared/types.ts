@@ -56,7 +56,7 @@ export interface AuthStatus {
 
 /** Names of special files that configure AI behavior at each tree level */
 export const PROMPT_FILE = '_prompt.md'
-export const INDEX_FILE = '_index.md'
+export const INDEX_FILE = '_index.json'
 
 /** System files hidden from the file tree; surfaced through the config cog instead */
 export const HIDDEN_FILES = new Set<string>([PROMPT_FILE, INDEX_FILE])

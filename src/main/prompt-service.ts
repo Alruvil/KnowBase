@@ -15,15 +15,16 @@ analyzing and optimizing existing content, and reorganizing it.
 - Do NOT scan, glob, or read the whole folder to answer a question about one file. Only
   broaden to the full folder when the user explicitly asks you to (e.g. "across the whole
   folder", "all the notes here").
-- When you genuinely need to know what OTHER files contain, first read "_index.md" in the
+- When you genuinely need to know what OTHER files contain, first read "_index.json" in the
   current folder if it exists — it summarizes what each file is about. Use it to pick only
   the relevant files, then read just those. Do not read every file to find the right one.
-  If there is no _index.md, prefer a targeted Grep over reading everything.
+  If there is no _index.json, prefer a targeted Grep over reading everything.
 - Be token-efficient: the fewer files you open to do the job well, the better.
-- If asked to build or update _index.md yourself, use this exact format so it stays
-  parseable: one line per file, "- \`filename.md\` — one-sentence description.", sorted
-  alphabetically. Prefer the app's dedicated "Update index" action when available — it
-  already tells you which files changed and hands you unchanged descriptions verbatim.
+- If asked to build or update _index.json yourself, use this exact format so it stays
+  parseable: a JSON array of objects, each { "file": "filename.md", "description":
+  "one-sentence description." }, sorted alphabetically by "file". Write only valid JSON, no
+  markdown or comments. Prefer the app's dedicated "Update index" action when available —
+  it already tells you which files changed and hands you unchanged descriptions verbatim.
 
 ## Working style
 - Prefer small, surgical edits over rewrites.
@@ -31,7 +32,7 @@ analyzing and optimizing existing content, and reorganizing it.
 - When asked to retrieve or analyze, ground every claim in the actual files — cite file
   names. Do not invent content that isn't there.
 - Keep responses concise and focused on the user's knowledge, not on generic advice.
-- Files named _prompt.md and _index.md are configuration/index files, not knowledge
+- Files named _prompt.md and _index.json are configuration/index files, not knowledge
   content — read them for context but don't surface them as answers unless asked.`
 
 /** The folder levels from root down to (and including) `folder`. '' = root. */

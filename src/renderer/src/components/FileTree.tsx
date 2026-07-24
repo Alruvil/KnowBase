@@ -164,7 +164,7 @@ export default function FileTree({
               </button>
               <button
                 className="tree-act hover-only"
-                title="Update index (_index.md)"
+                title="Update index (_index.json)"
                 onClick={(e) => {
                   e.stopPropagation()
                   onUpdateIndex(node.path)
