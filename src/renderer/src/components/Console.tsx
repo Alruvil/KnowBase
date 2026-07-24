@@ -18,6 +18,8 @@ interface Props {
   /** A prompt (e.g. "update index") to auto-send once scoped correctly. */
   pendingPrompt: PendingPrompt | null
   onPendingPromptHandled: () => void
+  /** Whether AI credentials are configured; drives a proactive warning banner. */
+  authHasToken: boolean
   onChangeContext: (folder: string) => void
   onOpenSettings: () => void
 }
@@ -54,6 +56,7 @@ export default function Console({
   scopeFiles,
   pendingPrompt,
   onPendingPromptHandled,
+  authHasToken,
   onChangeContext,
   onOpenSettings
 }: Props): React.JSX.Element {
@@ -109,16 +112,18 @@ export default function Console({
       }
       if (p.requestId !== runningReq.current) return
       if (p.type === 'text') {
-        setMessages((prev) => {
-          if (assistantId.current) {
-            return prev.map((m) =>
-              m.id === assistantId.current ? { ...m, text: m.text + (p.text ?? '') } : m
-            )
-          }
+        const chunk = p.text ?? ''
+        // Note: the ref mutation must happen OUTSIDE the state updater — updaters
+        // must be pure (React StrictMode invokes them twice), or a mutating one
+        // drops the message on the replay pass.
+        if (assistantId.current === null) {
           const id = uid()
           assistantId.current = id
-          return [...prev, { id, role: 'assistant', text: p.text ?? '' }]
-        })
+          setMessages((prev) => [...prev, { id, role: 'assistant', text: chunk }])
+        } else {
+          const id = assistantId.current
+          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: m.text + chunk } : m)))
+        }
       } else if (p.type === 'tool') {
         assistantId.current = null // next text starts a fresh bubble after tool activity
         setMessages((prev) => [...prev, { id: uid(), role: 'tool', text: p.detail || p.tool || '' }])
@@ -293,6 +298,13 @@ export default function Console({
           </button>
         )}
       </div>
+
+      {!authHasToken && (
+        <div className="console-auth-warning">
+          <span>⚠ No AI credentials configured — the console won&apos;t be able to answer.</span>
+          <button onClick={onOpenSettings}>Open Settings</button>
+        </div>
+      )}
 
       <div className="console-messages" ref={scrollRef}>
         {messages.length === 0 && !atRoot && (

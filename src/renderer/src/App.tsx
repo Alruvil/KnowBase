@@ -25,6 +25,7 @@ export default function App(): React.JSX.Element {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [git, setGit] = useState<GitStatus>({ enabled: false, dirty: false, files: 0 })
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null)
+  const [authHasToken, setAuthHasToken] = useState(false)
 
   const fileFolder = folderOf(selectedPath)
   const selectedRef = useRef<string | null>(null)
@@ -32,6 +33,10 @@ export default function App(): React.JSX.Element {
 
   const refreshGit = useCallback(() => {
     window.api.gitStatus().then(setGit)
+  }, [])
+
+  const refreshAuth = useCallback(() => {
+    window.api.getAuthStatus().then((s) => setAuthHasToken(s.hasToken))
   }, [])
 
   // The AI console follows the edited file's folder, until manually re-scoped.
@@ -62,9 +67,10 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     refreshTree()
     refreshGit()
+    refreshAuth()
     window.api.getRoot().then(setRootDir)
     return window.api.onFsChanged(onFsChange)
-  }, [refreshTree, refreshGit, onFsChange])
+  }, [refreshTree, refreshGit, refreshAuth, onFsChange])
 
   const saveContent = useCallback(() => {
     window.api.gitSave().then(setGit)
@@ -200,12 +206,20 @@ export default function App(): React.JSX.Element {
             scopeFiles={scopeFiles}
             pendingPrompt={pendingPrompt}
             onPendingPromptHandled={() => setPendingPrompt(null)}
+            authHasToken={authHasToken}
             onChangeContext={setContextFolder}
             onOpenSettings={() => setSettingsOpen(true)}
           />
         </section>
         </main>
-        {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+        {settingsOpen && (
+          <SettingsModal
+            onClose={() => {
+              setSettingsOpen(false)
+              refreshAuth()
+            }}
+          />
+        )}
       </div>
       <StatusBar status={git} onSave={saveContent} onRevert={revertContent} />
     </div>

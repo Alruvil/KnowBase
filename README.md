@@ -162,10 +162,8 @@ npm run test:watch
 
 ## Roadmap
 
-- Index-first retrieval in the console (already instructed to prefer `_index.json`; not yet exercised at scale)
-- Packaging for distribution (bundle the Agent SDK binary via `asarUnpack`)
-- Jira integration and project-status reports (via MCP)
-- Optional per-project content versioning
+Ideas and deferred work live in **[ROADMAP.md](ROADMAP.md)** — add to it rather than letting
+ideas live only in conversation.
 
 ## License
 
