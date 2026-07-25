@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { AgentEventPayload } from '@shared/types'
+import type { AgentEventPayload, DiffFile } from '@shared/types'
 import { detectMention } from '../lib/mention'
 
 /** A prompt to send automatically once the console is scoped to `folder`. */
@@ -22,12 +22,16 @@ interface Props {
   authHasToken: boolean
   onChangeContext: (folder: string) => void
   onOpenSettings: () => void
+  /** Open the diff layer for a single changed file (view content + revert). */
+  onOpenDiffFile: (path: string) => void
 }
 
 interface Msg {
   id: string
   role: 'user' | 'assistant' | 'tool' | 'error' | 'system' | 'meta' | 'diff'
   text: string
+  diffHeader?: string
+  diffFiles?: DiffFile[]
 }
 
 interface Crumb {
@@ -58,7 +62,8 @@ export default function Console({
   onPendingPromptHandled,
   authHasToken,
   onChangeContext,
-  onOpenSettings
+  onOpenSettings,
+  onOpenDiffFile
 }: Props): React.JSX.Element {
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
@@ -102,10 +107,9 @@ export default function Console({
         const d = p.diff
         if (d && d.files.length) {
           const header = `${d.files.length} file${d.files.length > 1 ? 's' : ''} changed  ·  +${d.added} −${d.removed}`
-          const lines = d.files.map((f) => `  ${f.path}  +${f.added} −${f.removed}`)
           setMessages((prev) => [
             ...prev,
-            { id: uid(), role: 'diff', text: `${header}\n${lines.join('\n')}` }
+            { id: uid(), role: 'diff', text: header, diffHeader: header, diffFiles: d.files }
           ])
         }
         return
@@ -316,12 +320,35 @@ export default function Console({
             </span>
           </div>
         )}
-        {messages.map((m) => (
-          <div key={m.id} className={`console-msg ${m.role}`}>
-            <span className="console-role">{roleGlyph(m.role)}</span>
-            <span className="console-text">{m.text}</span>
-          </div>
-        ))}
+        {messages.map((m) =>
+          m.role === 'diff' && m.diffFiles ? (
+            <div key={m.id} className="console-msg diff">
+              <span className="console-role">{roleGlyph(m.role)}</span>
+              <span className="console-text">
+                {m.diffHeader}
+                <span className="diff-msg-files">
+                  {m.diffFiles.map((f) => (
+                    <button
+                      key={f.path}
+                      className="diff-msg-file"
+                      title="View the diff and revert just this file"
+                      onClick={() => onOpenDiffFile(f.path)}
+                    >
+                      {f.path}
+                      {f.added > 0 && <span className="diff-line-add"> +{f.added}</span>}
+                      {f.removed > 0 && <span className="diff-line-del"> −{f.removed}</span>}
+                    </button>
+                  ))}
+                </span>
+              </span>
+            </div>
+          ) : (
+            <div key={m.id} className={`console-msg ${m.role}`}>
+              <span className="console-role">{roleGlyph(m.role)}</span>
+              <span className="console-text">{m.text}</span>
+            </div>
+          )
+        )}
         {running && (
           <div className="console-msg assistant thinking">
             <span className="console-role">✦</span>

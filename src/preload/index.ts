@@ -1,5 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { FileNode, AgentEventPayload, HistoryEntry, AuthStatus, GitStatus } from '../shared/types'
+import type {
+  FileNode,
+  AgentEventPayload,
+  HistoryEntry,
+  AuthStatus,
+  GitStatus,
+  DiffSummary
+} from '../shared/types'
 
 const api = {
   getTree: (): Promise<FileNode[]> => ipcRenderer.invoke('fs:tree'),
@@ -55,6 +62,9 @@ const api = {
   gitStatus: (): Promise<GitStatus> => ipcRenderer.invoke('git:status'),
   gitSave: (): Promise<GitStatus> => ipcRenderer.invoke('git:save'),
   gitRevert: (): Promise<GitStatus> => ipcRenderer.invoke('git:revert'),
+  gitDiff: (): Promise<DiffSummary> => ipcRenderer.invoke('git:diff'),
+  gitDiffFile: (path: string): Promise<string> => ipcRenderer.invoke('git:diff-file', path),
+  gitRevertFile: (path: string): Promise<DiffSummary> => ipcRenderer.invoke('git:revert-file', path),
 
   // --- Diagnostics ---
   getLogPath: (): Promise<string> => ipcRenderer.invoke('log:path'),

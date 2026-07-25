@@ -71,10 +71,14 @@ introduction, requirements, and getting started.
   call the content is committed as a restore point.
 - After a call, the console shows a **diff summary** (`✎ N files changed · +X −Y`, with the
   file list).
-- The bottom **status bar** shows a **Save** / **Revert** pair whenever the content differs
-  from the last commit (covers manual edits too). **Revert** drops everything back to the last
-  commit; **Save** commits the current state as a new restore point. Conversation history is
-  never versioned or lost on revert.
+- The bottom **status bar** shows a **View diff** / **Save** / **Revert** set whenever the
+  content differs from the last commit (covers manual edits too). **Save** commits the current
+  state as a new restore point; **Revert** drops *everything* back to the last commit.
+  Conversation history is never versioned or lost on revert.
+- **View diff** opens a layer listing every changed file with added/removed counts — click a
+  file to see its actual unified diff (colored +/− lines), and **Revert file** to discard just
+  that one file, leaving the rest (e.g. other edits you made while the AI was working) intact.
+  Each file in a console diff summary is also a link straight into this same view.
 
 ## Auth & settings (console ⚙)
 

@@ -165,6 +165,10 @@ npm run test:watch
 Ideas and deferred work live in **[ROADMAP.md](ROADMAP.md)** — add to it rather than letting
 ideas live only in conversation.
 
+## Changelog
+
+What actually shipped in each version: **[CHANGELOG.md](CHANGELOG.md)**.
+
 ## License
 
 [MIT](LICENSE) — this project's own code. Dependencies retain their own licenses;

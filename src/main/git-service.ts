@@ -115,6 +115,13 @@ export async function diffSinceHead(root: string): Promise<DiffSummary> {
   return parseNumstat(out)
 }
 
+/** Unified diff text for a single file, against the last commit. */
+export async function diffPatch(root: string, path: string): Promise<string> {
+  if (!(await isAvailable())) return ''
+  await tryGit(root, ['add', '-A']) // stage so new files show a full-file diff
+  return tryGit(root, ['diff', '--cached', 'HEAD', '--', path])
+}
+
 /** Drop all working-tree changes back to the last commit (incl. new files). */
 export async function revert(root: string): Promise<boolean> {
   if (!(await isAvailable())) return false
@@ -125,6 +132,28 @@ export async function revert(root: string): Promise<boolean> {
     return true
   } catch (err) {
     log('git', 'revert failed', { error: err instanceof Error ? err.message : String(err) })
+    return false
+  }
+}
+
+/** Drop working-tree changes to a single file back to the last commit. */
+export async function revertFile(root: string, path: string): Promise<boolean> {
+  if (!(await isAvailable())) return false
+  try {
+    await tryGit(root, ['add', '-A'])
+    const existedAtHead = await git(root, ['cat-file', '-e', `HEAD:${path}`])
+      .then(() => true)
+      .catch(() => false)
+    await tryGit(root, ['reset', 'HEAD', '--', path])
+    if (existedAtHead) {
+      await git(root, ['checkout', 'HEAD', '--', path])
+    } else {
+      await fs.rm(join(root, path), { force: true })
+    }
+    log('git', 'reverted file', { path })
+    return true
+  } catch (err) {
+    log('git', 'revert file failed', { path, error: err instanceof Error ? err.message : String(err) })
     return false
   }
 }

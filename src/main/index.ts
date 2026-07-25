@@ -201,6 +201,13 @@ function registerIpc(): void {
     mainWindow?.webContents.send('fs:changed') // refresh tree + open file
     return gitService.status(rootDir)
   })
+  ipcMain.handle('git:diff', () => gitService.diffSinceHead(rootDir))
+  ipcMain.handle('git:diff-file', (_e, path: string) => gitService.diffPatch(rootDir, path))
+  ipcMain.handle('git:revert-file', async (_e, path: string) => {
+    await gitService.revertFile(rootDir, path)
+    mainWindow?.webContents.send('fs:changed') // refresh tree + open file
+    return gitService.diffSinceHead(rootDir)
+  })
 }
 
 app.whenReady().then(() => {

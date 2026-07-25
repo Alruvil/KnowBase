@@ -5,6 +5,7 @@ import FileTree from './components/FileTree'
 import Editor from './components/Editor'
 import Console, { type PendingPrompt } from './components/Console'
 import SettingsModal from './components/SettingsModal'
+import DiffModal from './components/DiffModal'
 import StatusBar from './components/StatusBar'
 
 /** Folder that contains a file ('' = knowledge root). */
@@ -23,6 +24,8 @@ export default function App(): React.JSX.Element {
   const [sidebarWidth, setSidebarWidth] = useState(260)
   const [consoleHeight, setConsoleHeight] = useState(220)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [diffOpen, setDiffOpen] = useState(false)
+  const [diffInitialFile, setDiffInitialFile] = useState<string | null>(null)
   const [git, setGit] = useState<GitStatus>({ enabled: false, dirty: false, files: 0 })
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null)
   const [authHasToken, setAuthHasToken] = useState(false)
@@ -119,6 +122,11 @@ export default function App(): React.JSX.Element {
     [openFile]
   )
 
+  const openDiffFile = useCallback((path: string) => {
+    setDiffInitialFile(path)
+    setDiffOpen(true)
+  }, [])
+
   /** Compute a token-frugal reindex prompt and route it through the console. */
   const requestIndexUpdate = useCallback(async (folderPath: string) => {
     const text = await window.api.buildIndexPrompt(folderPath)
@@ -209,6 +217,7 @@ export default function App(): React.JSX.Element {
             authHasToken={authHasToken}
             onChangeContext={setContextFolder}
             onOpenSettings={() => setSettingsOpen(true)}
+            onOpenDiffFile={openDiffFile}
           />
         </section>
         </main>
@@ -220,8 +229,25 @@ export default function App(): React.JSX.Element {
             }}
           />
         )}
+        {diffOpen && (
+          <DiffModal
+            initialFile={diffInitialFile}
+            onClose={() => {
+              setDiffOpen(false)
+              setDiffInitialFile(null)
+            }}
+          />
+        )}
       </div>
-      <StatusBar status={git} onSave={saveContent} onRevert={revertContent} />
+      <StatusBar
+        status={git}
+        onSave={saveContent}
+        onRevert={revertContent}
+        onViewDiff={() => {
+          setDiffInitialFile(null)
+          setDiffOpen(true)
+        }}
+      />
     </div>
   )
 }

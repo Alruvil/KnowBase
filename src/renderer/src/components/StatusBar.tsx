@@ -4,9 +4,10 @@ interface Props {
   status: GitStatus
   onSave: () => void
   onRevert: () => void
+  onViewDiff: () => void
 }
 
-export default function StatusBar({ status, onSave, onRevert }: Props): React.JSX.Element | null {
+export default function StatusBar({ status, onSave, onRevert, onViewDiff }: Props): React.JSX.Element | null {
   if (!status.enabled) return null
 
   return (
@@ -16,6 +17,9 @@ export default function StatusBar({ status, onSave, onRevert }: Props): React.JS
         {status.dirty ? (
           <>
             <span className="sb-dirty">● {status.files} unsaved</span>
+            <button className="sb-btn" title="See exactly what changed, file by file" onClick={onViewDiff}>
+              View diff
+            </button>
             <button className="sb-btn" title="Commit the current content as a restore point" onClick={onSave}>
               Save
             </button>

@@ -1253,3 +1253,130 @@ button {
 .modal-btn.primary:hover {
   background: rgba(137, 180, 250, 0.25);
 }
+
+/* ---------- Diff modal ---------- */
+
+.modal-diff {
+  width: 720px;
+}
+
+.diff-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diff-file {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.diff-file-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+.diff-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 9px 11px;
+  text-align: left;
+}
+
+.diff-file-row:hover {
+  background: var(--bg-hover);
+}
+
+.diff-file-caret {
+  color: var(--text-faint);
+  width: 10px;
+}
+
+.diff-file-path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.diff-file-counts {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.diff-file-revert {
+  flex-shrink: 0;
+}
+
+.diff-patch-wrap {
+  border-top: 1px solid var(--border);
+  max-height: 320px;
+  overflow: auto;
+  background: var(--bg-panel);
+}
+
+.diff-patch {
+  margin: 0;
+  padding: 8px 0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-patch div {
+  padding: 0 11px;
+}
+
+.diff-line-add {
+  color: var(--green);
+  background: rgba(166, 227, 161, 0.08);
+}
+
+.diff-line-del {
+  color: var(--red);
+  background: rgba(243, 139, 168, 0.08);
+}
+
+.diff-line-hunk {
+  color: var(--accent);
+}
+
+.diff-line-meta,
+.diff-line-ctx {
+  color: var(--text-dim);
+}
+
+/* ---------- Console diff message links ---------- */
+
+.diff-msg-files {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.diff-msg-file {
+  align-self: flex-start;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.diff-msg-file:hover {
+  opacity: 0.8;
+}
