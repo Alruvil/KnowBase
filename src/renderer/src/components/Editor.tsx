@@ -42,7 +42,8 @@ const editorTheme = EditorView.theme(
     '&': { height: '100%', fontSize: '15px' },
     '.cm-scroller': {
       fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace",
-      lineHeight: '1.6'
+      lineHeight: '1.6',
+      justifyContent: 'center'
     },
     '.cm-content': { padding: '16px 8px', maxWidth: '820px', caretColor: '#89b4fa' },
     '&.cm-focused': { outline: 'none' },

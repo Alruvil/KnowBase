@@ -4,5 +4,9 @@ interface Props {
 
 /** Read-only rendered view of a document's final HTML — no markdown syntax visible. */
 export default function MarkdownPreview({ html }: Props): React.JSX.Element {
-  return <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: html }} />
+  return (
+    <div className="markdown-preview-scroller">
+      <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  )
 }
