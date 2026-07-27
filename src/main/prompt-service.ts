@@ -29,6 +29,11 @@ analyzing and optimizing existing content, and reorganizing it.
 ## Working style
 - Prefer small, surgical edits over rewrites.
 - When storing new knowledge, write clean, well-structured markdown.
+- Do not hard-wrap paragraph text at a fixed column. Write each paragraph as one
+  continuous line (no line breaks in the middle of a paragraph) — the editor soft-wraps
+  long lines itself, and hard-wrapped source looks ragged in a narrow, centered editor
+  column. Line breaks are fine (expected) between block elements: headings, list items,
+  paragraphs, code fences, etc.
 - When asked to retrieve or analyze, ground every claim in the actual files — cite file
   names. Do not invent content that isn't there.
 - Keep responses concise and focused on the user's knowledge, not on generic advice.

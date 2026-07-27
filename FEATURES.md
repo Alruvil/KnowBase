@@ -18,6 +18,8 @@ introduction, requirements, and getting started.
 - **Editor auto-reloads** when a file changes on disk (e.g. the AI edited it). If you have
   unsaved edits, it shows a **⟳ changed on disk — reload** button instead of clobbering your
   work.
+- **Find in file** — `Ctrl/Cmd+F` opens a search panel (case toggle, regex, replace,
+  next/previous) inside the editor.
 - **Breadcrumb** above the editor (`Project › Folder › file`) with a config **⚙ cog** on each
   folder segment.
 

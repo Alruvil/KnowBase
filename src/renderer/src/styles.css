@@ -471,6 +471,63 @@ button {
   height: 100%;
 }
 
+/* Ctrl+F search panel (@codemirror/search) — match the app's theme */
+.editor-body .cm-panels {
+  background: var(--bg-sidebar);
+  color: var(--text);
+}
+
+.editor-body .cm-panel.cm-search {
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.editor-body .cm-panel.cm-search label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.editor-body .cm-textfield {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 3px 7px;
+  font-size: 12px;
+}
+
+.editor-body .cm-textfield:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.editor-body .cm-button {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 3px 9px;
+  font-size: 12px;
+}
+
+.editor-body .cm-button:hover {
+  background: var(--bg-active);
+}
+
+.editor-body .cm-searchMatch {
+  background: rgba(249, 226, 175, 0.25);
+}
+
+.editor-body .cm-searchMatch-selected {
+  background: rgba(249, 226, 175, 0.55);
+}
+
 /* ---------- Markdown preview (rendered HTML, no markdown syntax) ---------- */
 
 .markdown-preview-scroller {

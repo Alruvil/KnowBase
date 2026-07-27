@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap, lineNumbers, highlightActiveLine } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import { search, searchKeymap } from '@codemirror/search'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 import { syntaxHighlighting, HighlightStyle } from '@codemirror/language'
@@ -129,8 +130,10 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
           },
           indentWithTab,
           ...defaultKeymap,
-          ...historyKeymap
+          ...historyKeymap,
+          ...searchKeymap
         ]),
+        search(),
         lineNumbers(),
         highlightActiveLine(),
         EditorView.lineWrapping,

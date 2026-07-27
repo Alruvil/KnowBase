@@ -14,6 +14,13 @@ versioning](https://semver.org/).
   fixing the case where a global Revert would also wipe out unrelated manual edits made while
   the AI was working. Each file in a console diff summary is now a clickable link into the same
   view.
+- **Find in file** (`Ctrl/Cmd+F`) in the editor, via `@codemirror/search` — case toggle, regex,
+  replace, next/previous — styled to match the app's theme.
+- The editor's edit and preview panes are now centered at a readable max width instead of
+  stretching full-width, with the scrollbar kept at the pane's right edge in both modes.
+- The AI's base system prompt now tells it not to hard-wrap paragraphs at a fixed column
+  (write one paragraph per line, let the editor soft-wrap) — hard-wrapped source looked ragged
+  in the new narrower, centered column.
 
 ## [0.2.0] - 2026-07-25
 
