@@ -1,6 +1,6 @@
 {
   "name": "knowbase",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "KnowBase — a markdown knowledge base with an embedded AI assistant that edits, generates, and answers questions about your files",
   "main": "out/main/index.js",
   "type": "module",

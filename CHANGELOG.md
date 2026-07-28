@@ -6,6 +6,8 @@ versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-28
+
 ### Added
 
 - **Diff viewer with per-file revert.** The status bar's new **View diff** button opens a layer
