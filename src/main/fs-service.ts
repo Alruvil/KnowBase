@@ -49,6 +49,12 @@ export async function readFile(root: string, relPath: string): Promise<string> {
   return fs.readFile(safePath(root, relPath), 'utf-8')
 }
 
+/** Reads a binary file (e.g. an image) as base64, for display in the renderer. */
+export async function readBinary(root: string, relPath: string): Promise<string> {
+  const buf = await fs.readFile(safePath(root, relPath))
+  return buf.toString('base64')
+}
+
 export async function writeFile(root: string, relPath: string, content: string): Promise<void> {
   const abs = safePath(root, relPath)
   await fs.mkdir(dirname(abs), { recursive: true })

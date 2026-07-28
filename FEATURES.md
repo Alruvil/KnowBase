@@ -34,6 +34,23 @@ introduction, requirements, and getting started.
   target, preserves formatting instead of dumping raw markdown.
 - Local image paths in notes don't resolve on an external site — upload images there separately.
 
+## Other file types the AI generates
+
+Not everything the AI produces is markdown — the editor recognizes the file type and adapts:
+
+- **`.html` / `.htm`** — edited with HTML syntax highlighting; **Preview** renders the raw
+  document in a sandboxed iframe instead of running it through the markdown parser, so a full
+  page (or a small interactive presentation) displays correctly instead of partially, as raw
+  markdown-escaped text.
+- **`.svg`** — same treatment; useful for AI-generated infographics, since SVG is text the
+  Agent SDK can actually write. Preview renders it as the image it is; Edit shows the raw
+  markup.
+- **Raster images** (`.png` `.jpg` `.jpeg` `.gif` `.webp` `.bmp` `.ico`) — open read-only in an
+  image viewer instead of the text editor (reading them as text would corrupt the binary data).
+  Refreshes automatically if the file changes on disk. **Ctrl/Cmd + scroll to zoom**
+  (25%–800%), double-click to reset.
+- The file tree shows a different icon per kind (`•` markdown, `◇` html, `❖` svg, `▧` image).
+
 ## Per-level AI instructions
 
 - Every folder/project has a **⚙ cog** (in the tree and the breadcrumb) that opens its

@@ -80,6 +80,7 @@ function startWatcher(): void {
 function registerIpc(): void {
   ipcMain.handle('fs:tree', () => fsService.buildTree(rootDir))
   ipcMain.handle('fs:read', (_e, relPath: string) => fsService.readFile(rootDir, relPath))
+  ipcMain.handle('fs:read-binary', (_e, relPath: string) => fsService.readBinary(rootDir, relPath))
   ipcMain.handle('fs:write', (_e, relPath: string, content: string) =>
     fsService.writeFile(rootDir, relPath, content)
   )

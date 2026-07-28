@@ -21,6 +21,15 @@ versioning](https://semver.org/).
 - The AI's base system prompt now tells it not to hard-wrap paragraphs at a fixed column
   (write one paragraph per line, let the editor soft-wrap) — hard-wrapped source looked ragged
   in the new narrower, centered column.
+- **HTML/SVG/image support in the editor.** The AI isn't limited to markdown notes — it also
+  generates full HTML pages, presentations, and SVG infographics. `.html`/`.htm`/`.svg` files
+  now get HTML syntax highlighting and a sandboxed-iframe Preview instead of being run through
+  the markdown parser (previously rendered partially, with the rest left as literal text).
+  Raster images (`.png`/`.jpg`/`.gif`/`.webp`/`.bmp`/`.ico`) open in a new read-only image
+  viewer instead of the text editor. A new `fs:read-binary` IPC channel reads binary files as
+  base64 for this. The file tree now shows a distinct icon per file kind. The image viewer
+  supports **Ctrl/Cmd + scroll to zoom** (25%–800%), double-click to reset, panning to any
+  edge of the zoomed image.
 
 ## [0.2.0] - 2026-07-25
 

@@ -11,6 +11,8 @@ import type {
 const api = {
   getTree: (): Promise<FileNode[]> => ipcRenderer.invoke('fs:tree'),
   readFile: (relPath: string): Promise<string> => ipcRenderer.invoke('fs:read', relPath),
+  readBinaryFile: (relPath: string): Promise<string> =>
+    ipcRenderer.invoke('fs:read-binary', relPath),
   writeFile: (relPath: string, content: string): Promise<void> =>
     ipcRenderer.invoke('fs:write', relPath, content),
   createFile: (relPath: string, content = ''): Promise<void> =>

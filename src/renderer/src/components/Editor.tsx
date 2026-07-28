@@ -4,14 +4,17 @@ import { EditorView, keymap, lineNumbers, highlightActiveLine } from '@codemirro
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { search, searchKeymap } from '@codemirror/search'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { html } from '@codemirror/lang-html'
 import { languages } from '@codemirror/language-data'
-import { syntaxHighlighting, HighlightStyle } from '@codemirror/language'
+import { syntaxHighlighting, HighlightStyle, defaultHighlightStyle } from '@codemirror/language'
 import { tags } from '@lezer/highlight'
 import Breadcrumb from './Breadcrumb'
 import MarkdownToolbar from './MarkdownToolbar'
 import MarkdownPreview from './MarkdownPreview'
+import HtmlPreview from './HtmlPreview'
 import type { MdCommand } from '../lib/markdown-commands'
 import { renderMarkdownToHtml, htmlToPlainText } from '../lib/render-markdown'
+import { fileKind } from '../lib/file-kind'
 
 interface Props {
   path: string
@@ -59,6 +62,7 @@ const editorTheme = EditorView.theme(
 )
 
 export default function Editor({ path, initialContent, onOpenPrompt }: Props): React.JSX.Element {
+  const kind = fileKind(path)
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const dirtyRef = useRef(false)
@@ -79,7 +83,10 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
 
   const enterPreview = (): void => {
     const view = viewRef.current
-    if (view) setPreviewHtml(renderMarkdownToHtml(view.state.doc.toString()))
+    if (view) {
+      const content = view.state.doc.toString()
+      setPreviewHtml(kind === 'markdown' ? renderMarkdownToHtml(content) : content)
+    }
     setMode('preview')
   }
 
@@ -137,8 +144,9 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
         lineNumbers(),
         highlightActiveLine(),
         EditorView.lineWrapping,
-        markdown({ base: markdownLanguage, codeLanguages: languages }),
-        syntaxHighlighting(markdownHighlight),
+        ...(kind === 'markdown'
+          ? [markdown({ base: markdownLanguage, codeLanguages: languages }), syntaxHighlighting(markdownHighlight)]
+          : [html(), syntaxHighlighting(defaultHighlightStyle, { fallback: true })]),
         editorTheme,
         EditorView.updateListener.of((update) => {
           if (update.docChanged && !applyingExternal.current) {
@@ -173,7 +181,7 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
     lastSaved.current = content
     setSaved(true)
     setDiskConflict(false)
-    if (mode === 'preview') setPreviewHtml(renderMarkdownToHtml(content))
+    if (mode === 'preview') setPreviewHtml(kind === 'markdown' ? renderMarkdownToHtml(content) : content)
   }
 
   // The file changed on disk (e.g. the AI edited it). Reload if the user has no
@@ -194,9 +202,11 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
         <div className="editor-header-actions">
           {mode === 'preview' ? (
             <>
-              <button className="editor-mode-btn" onClick={copyPreview}>
-                {copied ? '✓ copied' : 'Copy HTML'}
-              </button>
+              {kind === 'markdown' && (
+                <button className="editor-mode-btn" onClick={copyPreview}>
+                  {copied ? '✓ copied' : 'Copy HTML'}
+                </button>
+              )}
               <button className="editor-mode-btn" onClick={() => setMode('edit')}>
                 ✎ Edit
               </button>
@@ -222,8 +232,13 @@ export default function Editor({ path, initialContent, onOpenPrompt }: Props): R
         </div>
       </div>
       <div className="editor-body" style={{ display: mode === 'edit' ? undefined : 'none' }} ref={containerRef} />
-      {mode === 'preview' && <MarkdownPreview html={previewHtml} />}
-      {mode === 'edit' && <MarkdownToolbar onRun={runCommand} />}
+      {mode === 'preview' &&
+        (kind === 'markdown' ? (
+          <MarkdownPreview html={previewHtml} />
+        ) : (
+          <HtmlPreview content={previewHtml} />
+        ))}
+      {mode === 'edit' && kind === 'markdown' && <MarkdownToolbar onRun={runCommand} />}
     </div>
   )
 }

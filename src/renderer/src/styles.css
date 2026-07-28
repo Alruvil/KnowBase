@@ -530,6 +530,54 @@ button {
 
 /* ---------- Markdown preview (rendered HTML, no markdown syntax) ---------- */
 
+/* ---------- Raw HTML/SVG preview (sandboxed iframe) ---------- */
+
+.html-preview {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
+
+/* ---------- Image viewer ---------- */
+
+.image-viewer-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  padding: 24px;
+}
+
+/* Centered via margin: auto, not align-items/justify-content — the latter clips
+   scrolling to content pushed above/left of the container's start edge when zoomed. */
+.image-viewer-body img,
+.image-viewer-body p {
+  margin: auto;
+}
+
+/* Sized inline (see ImageViewer) — no max-width/height here, or zoom past 100%
+   would be capped. flex-shrink: 0 keeps the zoomed box from being squeezed back
+   down to the container, which is what makes it actually scrollable. */
+.image-viewer-body img {
+  display: block;
+  flex-shrink: 0;
+}
+
+.image-zoom-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
 .markdown-preview-scroller {
   flex: 1;
   min-height: 0;

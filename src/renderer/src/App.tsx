@@ -3,10 +3,12 @@ import type { FileNode, GitStatus } from '@shared/types'
 import { HIDDEN_FILES, PROMPT_TEMPLATE, promptPath } from '@shared/types'
 import FileTree from './components/FileTree'
 import Editor from './components/Editor'
+import ImageViewer from './components/ImageViewer'
 import Console, { type PendingPrompt } from './components/Console'
 import SettingsModal from './components/SettingsModal'
 import DiffModal from './components/DiffModal'
 import StatusBar from './components/StatusBar'
+import { fileKind } from './lib/file-kind'
 
 /** Folder that contains a file ('' = knowledge root). */
 function folderOf(path: string | null): string {
@@ -58,7 +60,7 @@ export default function App(): React.JSX.Element {
     refreshTree()
     refreshGit()
     const path = selectedRef.current
-    if (!path) return
+    if (!path || fileKind(path) === 'image') return
     try {
       const content = await window.api.readFile(path)
       setFileContent((prev) => (prev === content ? prev : content))
@@ -103,6 +105,11 @@ export default function App(): React.JSX.Element {
   }, [tree, contextFolder])
 
   const openFile = useCallback(async (path: string) => {
+    if (fileKind(path) === 'image') {
+      setSelectedPath(path)
+      setFileContent(null)
+      return
+    }
     try {
       const content = await window.api.readFile(path)
       setSelectedPath(path)
@@ -194,7 +201,9 @@ export default function App(): React.JSX.Element {
       <div className="splitter splitter-v" onMouseDown={dragSidebar} />
       <main className="main">
         <section className="editor-pane">
-          {selectedPath && fileContent !== null ? (
+          {selectedPath && fileKind(selectedPath) === 'image' ? (
+            <ImageViewer path={selectedPath} onOpenPrompt={openPrompt} />
+          ) : selectedPath && fileContent !== null ? (
             <Editor
               path={selectedPath}
               initialContent={fileContent}

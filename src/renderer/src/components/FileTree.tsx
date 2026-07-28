@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { FileNode } from '@shared/types'
 import { HIDDEN_FILES, PROMPT_FILE } from '@shared/types'
+import { fileKind } from '../lib/file-kind'
+
+const FILE_ICON = { markdown: '•', html: '◇', svg: '❖', image: '▧' } as const
 
 interface Props {
   tree: FileNode[]
@@ -219,7 +222,7 @@ export default function FileTree({
         onContextMenu={(e) => openContextMenu(e, node)}
       >
         <span className="chevron" />
-        <span className="icon">•</span>
+        <span className="icon">{FILE_ICON[fileKind(node.name)]}</span>
         <span className="label">{node.name}</span>
       </div>
     )
