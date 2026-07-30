@@ -5,6 +5,8 @@ interface Props {
   onClose: () => void
   /** Open with this file's patch already expanded (e.g. from a console diff link). */
   initialFile?: string | null
+  /** Restrict the diff to one project's folder; '' = the whole content repo. */
+  project: string
 }
 
 const EMPTY: DiffSummary = { files: [], added: 0, removed: 0 }
@@ -31,15 +33,15 @@ function DiffPatch({ patch }: { patch: string }): React.JSX.Element {
   )
 }
 
-export default function DiffModal({ onClose, initialFile }: Props): React.JSX.Element {
+export default function DiffModal({ onClose, initialFile, project }: Props): React.JSX.Element {
   const [summary, setSummary] = useState<DiffSummary>(EMPTY)
   const [openFile, setOpenFile] = useState<string | null>(null)
   const [patch, setPatch] = useState('')
   const [loadingPatch, setLoadingPatch] = useState(false)
 
   useEffect(() => {
-    window.api.gitDiff().then(setSummary)
-  }, [])
+    window.api.gitDiff(project).then(setSummary)
+  }, [project])
 
   const loadPatch = async (path: string): Promise<void> => {
     setOpenFile(path)
@@ -75,7 +77,7 @@ export default function DiffModal({ onClose, initialFile }: Props): React.JSX.El
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal modal-diff" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <span>Changes since last save</span>
+          <span>Changes since last save{project && ` · ${project}`}</span>
           <button className="modal-close" onClick={onClose}>
             ✕
           </button>

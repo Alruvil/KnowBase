@@ -15,7 +15,7 @@ import {
   type AuthConfig
 } from './settings'
 import { runAgent } from './agent-service'
-import { loadHistory, appendHistory, type HistoryEntry } from './history-service'
+import { loadHistory, appendHistory, projectOf, type HistoryEntry } from './history-service'
 import { initLogger, logPath, log } from './logger'
 import * as gitService from './git-service'
 import { buildIndexUpdatePrompt } from './index-service'
@@ -136,13 +136,16 @@ function registerIpc(): void {
     'agent:send',
     async (_e, requestId: string, contextFolder: string, prompt: string) => {
       log('ipc', 'agent:send', { requestId, contextFolder, promptChars: prompt.length })
+      const project = projectOf(contextFolder)
       const controller = new AbortController()
       agentRuns.set(requestId, controller)
       const send = (payload: object): void =>
         mainWindow?.webContents.send('agent:event', { requestId, ...payload })
 
       // Snapshot content before the call so the AI's changes can be reviewed/reverted.
-      await gitService.checkpointBeforeCall(rootDir, prompt).catch(() => {})
+      // Scoped to this project, so a checkpoint here never sweeps up unrelated
+      // manual edits sitting dirty in another project.
+      await gitService.checkpointBeforeCall(rootDir, prompt, project).catch(() => {})
 
       let assistantText = ''
       try {
@@ -163,8 +166,9 @@ function registerIpc(): void {
         send({ type: 'error', message })
       }
 
-      // Summarize what the AI changed on disk (files + line counts).
-      const diff = await gitService.diffSinceHead(rootDir).catch(() => null)
+      // Summarize what the AI changed on disk (files + line counts), scoped to
+      // this project only.
+      const diff = await gitService.diffSinceHead(rootDir, project).catch(() => null)
       if (diff && diff.files.length) send({ type: 'diff', diff })
 
       // Persist the turn to the project's history (records the scope it came from).
@@ -192,17 +196,20 @@ function registerIpc(): void {
   ipcMain.handle('log:reveal', () => shell.showItemInFolder(logPath()))
 
   // --- Content versioning (git on the knowledge root) ---
-  ipcMain.handle('git:status', () => gitService.status(rootDir))
-  ipcMain.handle('git:save', async () => {
-    await gitService.commitAll(rootDir, `Manual save ${new Date().toISOString()}`)
-    return gitService.status(rootDir)
+  // An optional `scope` (a project's root-relative folder name) restricts the
+  // operation to that project, so Save/Revert/diff never touch other projects'
+  // pending changes just because you happened to be looking at this one.
+  ipcMain.handle('git:status', (_e, scope?: string) => gitService.status(rootDir, scope))
+  ipcMain.handle('git:save', async (_e, scope?: string) => {
+    await gitService.commitAll(rootDir, `Manual save ${new Date().toISOString()}`, scope)
+    return gitService.status(rootDir, scope)
   })
-  ipcMain.handle('git:revert', async () => {
-    await gitService.revert(rootDir)
+  ipcMain.handle('git:revert', async (_e, scope?: string) => {
+    await gitService.revert(rootDir, scope)
     mainWindow?.webContents.send('fs:changed') // refresh tree + open file
-    return gitService.status(rootDir)
+    return gitService.status(rootDir, scope)
   })
-  ipcMain.handle('git:diff', () => gitService.diffSinceHead(rootDir))
+  ipcMain.handle('git:diff', (_e, scope?: string) => gitService.diffSinceHead(rootDir, scope))
   ipcMain.handle('git:diff-file', (_e, path: string) => gitService.diffPatch(rootDir, path))
   ipcMain.handle('git:revert-file', async (_e, path: string) => {
     await gitService.revertFile(rootDir, path)

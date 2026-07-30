@@ -31,14 +31,32 @@ export default function App(): React.JSX.Element {
   const [git, setGit] = useState<GitStatus>({ enabled: false, dirty: false, files: 0 })
   const [pendingPrompt, setPendingPrompt] = useState<PendingPrompt | null>(null)
   const [authHasToken, setAuthHasToken] = useState(false)
+  // Root-relative paths, most-recently-used first — drives @-mention ordering.
+  const [recentFiles, setRecentFiles] = useState<string[]>([])
+
+  const touchRecent = useCallback((path: string) => {
+    setRecentFiles((prev) => [path, ...prev.filter((p) => p !== path)].slice(0, 50))
+  }, [])
 
   const fileFolder = folderOf(selectedPath)
+  // The project whose content Save/Revert/View-diff operate on: the one you're
+  // currently looking at, not the whole repo — so switching files never
+  // exposes (or risks reverting) another project's pending changes.
+  const activeProject = fileFolder.split('/')[0]
   const selectedRef = useRef<string | null>(null)
   selectedRef.current = selectedPath
+  const activeProjectRef = useRef('')
+  activeProjectRef.current = activeProject
 
   const refreshGit = useCallback(() => {
-    window.api.gitStatus().then(setGit)
+    window.api.gitStatus(activeProjectRef.current).then(setGit)
   }, [])
+
+  // Re-check status immediately when you switch to a different project, rather
+  // than waiting for the next unrelated filesystem event.
+  useEffect(() => {
+    refreshGit()
+  }, [activeProject, refreshGit])
 
   const refreshAuth = useCallback(() => {
     window.api.getAuthStatus().then((s) => setAuthHasToken(s.hasToken))
@@ -78,17 +96,20 @@ export default function App(): React.JSX.Element {
   }, [refreshTree, refreshGit, refreshAuth, onFsChange])
 
   const saveContent = useCallback(() => {
-    window.api.gitSave().then(setGit)
-  }, [])
+    window.api.gitSave(activeProject).then(setGit)
+  }, [activeProject])
 
   const revertContent = useCallback(() => {
-    if (window.confirm('Discard all content changes since the last save? This cannot be undone.')) {
-      window.api.gitRevert().then(setGit)
+    const label = activeProject ? `project "${activeProject}"` : 'all content'
+    if (window.confirm(`Discard changes to ${label} since the last save? This cannot be undone.`)) {
+      window.api.gitRevert(activeProject).then(setGit)
     }
-  }, [])
+  }, [activeProject])
 
   // Files the console can reference with "@", relative to the current scope
   // (that's what the agent can read, since its working dir is the scope folder).
+  // Ordered most-recently-used first, then alphabetically — recency is what
+  // actually matters when picking from a dropdown, not the alphabet.
   const scopeFiles = useMemo(() => {
     const out: string[] = []
     const prefix = contextFolder ? contextFolder + '/' : ''
@@ -101,23 +122,33 @@ export default function App(): React.JSX.Element {
       }
     }
     if (contextFolder) walk(tree)
-    return out.sort()
-  }, [tree, contextFolder])
+    const rank = new Map(recentFiles.map((p, i) => [p, i]))
+    return out.sort((a, b) => {
+      const ra = rank.get(prefix + a) ?? Infinity
+      const rb = rank.get(prefix + b) ?? Infinity
+      return ra !== rb ? ra - rb : a.localeCompare(b)
+    })
+  }, [tree, contextFolder, recentFiles])
 
-  const openFile = useCallback(async (path: string) => {
-    if (fileKind(path) === 'image') {
-      setSelectedPath(path)
-      setFileContent(null)
-      return
-    }
-    try {
-      const content = await window.api.readFile(path)
-      setSelectedPath(path)
-      setFileContent(content)
-    } catch (err) {
-      console.error('Failed to open file', path, err)
-    }
-  }, [])
+  const openFile = useCallback(
+    async (path: string) => {
+      if (fileKind(path) === 'image') {
+        setSelectedPath(path)
+        setFileContent(null)
+        touchRecent(path)
+        return
+      }
+      try {
+        const content = await window.api.readFile(path)
+        setSelectedPath(path)
+        setFileContent(content)
+        touchRecent(path)
+      } catch (err) {
+        console.error('Failed to open file', path, err)
+      }
+    },
+    [touchRecent]
+  )
 
   /** Open a folder's _prompt.md in the editor, creating it from a template if absent. */
   const openPrompt = useCallback(
@@ -227,6 +258,7 @@ export default function App(): React.JSX.Element {
             onChangeContext={setContextFolder}
             onOpenSettings={() => setSettingsOpen(true)}
             onOpenDiffFile={openDiffFile}
+            onFileReferenced={touchRecent}
           />
         </section>
         </main>
@@ -240,6 +272,7 @@ export default function App(): React.JSX.Element {
         )}
         {diffOpen && (
           <DiffModal
+            project={activeProject}
             initialFile={diffInitialFile}
             onClose={() => {
               setDiffOpen(false)
@@ -250,6 +283,7 @@ export default function App(): React.JSX.Element {
       </div>
       <StatusBar
         status={git}
+        project={activeProject}
         onSave={saveContent}
         onRevert={revertContent}
         onViewDiff={() => {

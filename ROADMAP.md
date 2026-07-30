@@ -37,11 +37,15 @@ this file rather than letting ideas live only in conversation.
 
 ## AI configuration & observability
 
-- **Stateful/session mode toggle.** Calls are currently stateless — each turn depends only on
-  the `_prompt.md` cascade, referenced/read files, and the console prompt, with no memory of
-  prior turns. This is the right default for "improve this artifact / answer over these files."
-  A future setting could opt into a conversational session (SDK resume) for the occasional
-  "iterate with me over several turns" flow. Deferred until that flow is actually wanted.
+- **Stateful/session mode toggle, or a session picker.** Calls are currently stateless — each
+  turn depends only on the `_prompt.md` cascade, referenced/read files, and the console prompt,
+  with no memory of prior turns. This is the right default for jumping between unrelated topics
+  (e.g. different blog posts) without stale context bleeding in, but it's the wrong default
+  when actually iterating on one topic across several turns — right now that means re-citing
+  the same files with `@` every time. A future setting could opt into a conversational session
+  (SDK resume), or — probably the better shape — a lightweight session picker so both modes
+  coexist: start fresh, or resume a specific recent session. Deferred until the current
+  friction (re-@-mentioning files) actually gets bad enough to justify it.
 - **"View effective prompt" action.** A way to see, on demand, the exact composed system
   prompt for the current console scope (base instructions + every `_prompt.md` that
   contributed, in cascade order) — so it's possible to visually confirm a folder's prompt is
@@ -55,6 +59,20 @@ this file rather than letting ideas live only in conversation.
   direct fix for the actual worry. Revisit only if a concrete need for user-editable prompt
   *logic* (not just prompt *content*, which `_prompt.md` already covers) shows up.
 
+## Console & editor UX
+
+- **Filter-first `@`-mention dropdown.** The mention popup lists files most-recently-used
+  first, but once a project has a lot of files the list itself becomes unwieldy to scan. Idea:
+  don't show any suggestions the moment you type `@` — wait until a few characters are typed to
+  filter the list down first. Deferred until a project actually has enough files for this to
+  bite (per the "don't build for potential" philosophy) — revisit then rather than guessing at
+  a threshold now.
+- **Publish to WordPress.** Explored in depth (per-project config, YAML frontmatter for
+  post metadata, update-in-place via a stored post ID, SEO-plugin fields and images explicitly
+  out of scope since they need WP-side setup this app can't provide). Full design saved at
+  `~/.claude/plans/tender-juggling-galaxy.md` if this gets picked back up later — shelved for
+  now, not because of a flaw in the design, just not the priority yet.
+
 ## Distribution & integrations
 
 - **Packaging for distribution** — bundle the Agent SDK's native binary via `asarUnpack` so
@@ -62,9 +80,3 @@ this file rather than letting ideas live only in conversation.
   real non-developer user to hand it to.
 - **Jira integration and project-status reports**, via MCP.
 
-## Content versioning
-
-- **Optional per-project content versioning** — Save/Revert are currently global to the whole
-  content repo (all projects share one git history). Per-project scoping would be more
-  precise but adds real complexity; revisit if the global scope ever actually causes a
-  problem in practice.

@@ -61,10 +61,12 @@ const api = {
     ipcRenderer.invoke('clipboard:write-html', html, text),
 
   // --- Content versioning ---
-  gitStatus: (): Promise<GitStatus> => ipcRenderer.invoke('git:status'),
-  gitSave: (): Promise<GitStatus> => ipcRenderer.invoke('git:save'),
-  gitRevert: (): Promise<GitStatus> => ipcRenderer.invoke('git:revert'),
-  gitDiff: (): Promise<DiffSummary> => ipcRenderer.invoke('git:diff'),
+  // `scope` restricts the operation to one project (its root-relative folder
+  // name); omit it to operate on the whole content repo.
+  gitStatus: (scope?: string): Promise<GitStatus> => ipcRenderer.invoke('git:status', scope),
+  gitSave: (scope?: string): Promise<GitStatus> => ipcRenderer.invoke('git:save', scope),
+  gitRevert: (scope?: string): Promise<GitStatus> => ipcRenderer.invoke('git:revert', scope),
+  gitDiff: (scope?: string): Promise<DiffSummary> => ipcRenderer.invoke('git:diff', scope),
   gitDiffFile: (path: string): Promise<string> => ipcRenderer.invoke('git:diff-file', path),
   gitRevertFile: (path: string): Promise<DiffSummary> => ipcRenderer.invoke('git:revert-file', path),
 

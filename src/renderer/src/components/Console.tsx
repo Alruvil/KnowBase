@@ -24,6 +24,8 @@ interface Props {
   onOpenSettings: () => void
   /** Open the diff layer for a single changed file (view content + revert). */
   onOpenDiffFile: (path: string) => void
+  /** Called with the root-relative path when a file is @-referenced, for recency ordering. */
+  onFileReferenced: (path: string) => void
 }
 
 interface Msg {
@@ -63,7 +65,8 @@ export default function Console({
   authHasToken,
   onChangeContext,
   onOpenSettings,
-  onOpenDiffFile
+  onOpenDiffFile,
+  onFileReferenced
 }: Props): React.JSX.Element {
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
@@ -172,6 +175,7 @@ export default function Console({
     const next = input.slice(0, mention.start) + `@${file} ` + input.slice(caret)
     setInput(next)
     setMention(null)
+    onFileReferenced(contextFolder ? `${contextFolder}/${file}` : file)
     requestAnimationFrame(() => {
       const pos = mention.start + file.length + 2
       inputRef.current?.focus()

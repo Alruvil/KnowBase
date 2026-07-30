@@ -79,19 +79,30 @@ export async function ensureRepo(root: string): Promise<boolean> {
   return true
 }
 
-export async function status(root: string): Promise<GitStatus> {
+/** A root-relative folder to restrict an operation to (a project); '' = everything. */
+type Scope = string | undefined
+
+function scopeArgs(scope: Scope): string[] {
+  return scope ? ['--', scope] : []
+}
+
+export async function status(root: string, scope?: Scope): Promise<GitStatus> {
   if (!(await isAvailable())) return { enabled: false, dirty: false, files: 0 }
-  const out = await tryGit(root, ['status', '--porcelain'])
+  const out = await tryGit(root, ['status', '--porcelain', ...scopeArgs(scope)])
   const lines = out.split('\n').filter((l) => l.trim())
   return { enabled: true, dirty: lines.length > 0, files: lines.length }
 }
 
-/** Commit all changes if any. Returns true if a commit was made. */
-export async function commitAll(root: string, message: string): Promise<boolean> {
+/**
+ * Commit changes if any. With a `scope`, only that project's changes are staged
+ * and committed — other projects' pending edits are left untouched, even if
+ * they're currently dirty too.
+ */
+export async function commitAll(root: string, message: string, scope?: Scope): Promise<boolean> {
   if (!(await isAvailable())) return false
-  await tryGit(root, ['add', '-A'])
+  await tryGit(root, ['add', '-A', ...scopeArgs(scope)])
   try {
-    await git(root, ['commit', '-m', message])
+    await git(root, ['commit', '-m', message, ...scopeArgs(scope)])
     return true
   } catch {
     return false // nothing to commit
@@ -99,19 +110,19 @@ export async function commitAll(root: string, message: string): Promise<boolean>
 }
 
 /** Snapshot the current content before an AI call, so it can be reverted. */
-export async function checkpointBeforeCall(root: string, prompt: string): Promise<void> {
+export async function checkpointBeforeCall(root: string, prompt: string, scope: Scope): Promise<void> {
   await ensureRepo(root)
   const summary = prompt.replace(/\s+/g, ' ').slice(0, 72)
-  const made = await commitAll(root, `before AI: ${summary}`)
-  log('git', 'pre-call checkpoint', { committed: made })
+  const made = await commitAll(root, `before AI: ${summary}`, scope)
+  log('git', 'pre-call checkpoint', { committed: made, scope: scope || '(all)' })
 }
 
 /** Diff of the working tree (incl. new files) against the last commit. */
-export async function diffSinceHead(root: string): Promise<DiffSummary> {
+export async function diffSinceHead(root: string, scope?: Scope): Promise<DiffSummary> {
   const empty: DiffSummary = { files: [], added: 0, removed: 0 }
   if (!(await isAvailable())) return empty
-  await tryGit(root, ['add', '-A']) // stage so new files are counted
-  const out = await tryGit(root, ['diff', '--cached', '--numstat', 'HEAD'])
+  await tryGit(root, ['add', '-A', ...scopeArgs(scope)]) // stage so new files are counted
+  const out = await tryGit(root, ['diff', '--cached', '--numstat', 'HEAD', ...scopeArgs(scope)])
   return parseNumstat(out)
 }
 
@@ -122,13 +133,23 @@ export async function diffPatch(root: string, path: string): Promise<string> {
   return tryGit(root, ['diff', '--cached', 'HEAD', '--', path])
 }
 
-/** Drop all working-tree changes back to the last commit (incl. new files). */
-export async function revert(root: string): Promise<boolean> {
+/**
+ * Drop working-tree changes back to the last commit, including new files. With
+ * a `scope`, only that project's files are touched — `reset --hard` isn't
+ * path-scopable, so this uses `checkout` + `clean` restricted to the scope
+ * instead, leaving other projects' pending changes exactly as they were.
+ */
+export async function revert(root: string, scope?: Scope): Promise<boolean> {
   if (!(await isAvailable())) return false
   try {
-    await git(root, ['reset', '--hard', 'HEAD'])
-    await git(root, ['clean', '-fd']) // remove untracked (respects .gitignore)
-    log('git', 'reverted to last commit')
+    if (scope) {
+      await git(root, ['checkout', 'HEAD', '--', scope])
+      await git(root, ['clean', '-fd', '--', scope])
+    } else {
+      await git(root, ['reset', '--hard', 'HEAD'])
+      await git(root, ['clean', '-fd']) // remove untracked (respects .gitignore)
+    }
+    log('git', 'reverted to last commit', { scope: scope || '(all)' })
     return true
   } catch (err) {
     log('git', 'revert failed', { error: err instanceof Error ? err.message : String(err) })

@@ -2,17 +2,25 @@ import type { GitStatus } from '@shared/types'
 
 interface Props {
   status: GitStatus
+  /** Project this status/actions are scoped to; '' = whole content repo. */
+  project: string
   onSave: () => void
   onRevert: () => void
   onViewDiff: () => void
 }
 
-export default function StatusBar({ status, onSave, onRevert, onViewDiff }: Props): React.JSX.Element | null {
+export default function StatusBar({
+  status,
+  project,
+  onSave,
+  onRevert,
+  onViewDiff
+}: Props): React.JSX.Element | null {
   if (!status.enabled) return null
 
   return (
     <div className="statusbar">
-      <span className="statusbar-label">Content</span>
+      <span className="statusbar-label">Content{project && ` · ${project}`}</span>
       <div className="statusbar-right">
         {status.dirty ? (
           <>
@@ -25,7 +33,11 @@ export default function StatusBar({ status, onSave, onRevert, onViewDiff }: Prop
             </button>
             <button
               className="sb-btn danger"
-              title="Discard all content changes since the last save"
+              title={
+                project
+                  ? `Discard changes to "${project}" since the last save`
+                  : 'Discard all content changes since the last save'
+              }
               onClick={onRevert}
             >
               Revert
