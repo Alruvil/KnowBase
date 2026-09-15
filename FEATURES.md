@@ -76,12 +76,22 @@ Not everything the AI produces is markdown — the editor recognizes the file ty
 
 - Runs the **Claude Agent SDK** scoped to the folder shown in the "Runs in" breadcrumb — the AI
   reads/edits only within that folder.
+- Assistant replies render as **formatted markdown** (bold, links, lists, code, etc.) instead
+  of raw syntax.
 - The scope **follows the file you're editing**, but you can click a level to re-scope the AI
   independently (with a **↺ follow file** button to snap back). It's blocked at the root — the
   AI always works inside a project.
-- Type **`@`** to reference a file (autocomplete over the current scope).
+- Type **`@`** to reference a file (autocomplete over the current scope, most-recently-used
+  files first — recency is tracked both when you open a file and when you `@`-reference it).
+- The **input box is resizable** — drag the handle above it, same as the sidebar/console
+  splitters.
 - **Conversation history per project**, saved to disk and restored when you switch back — so
   you can drift between projects and pick up where you left off.
+- **↩ Consider last answer** — a toggle next to the input, off by default. When on, the AI's
+  last answer (just the final reply, not intermediate tool-use steps) is included as context
+  for your next message, so you can say "what about X" without re-explaining what you're
+  replying to. Calls stay fully stateless — this folds the prior answer into one self-contained
+  prompt rather than resuming a session. Resets off when you switch scope.
 - Each answer shows the **model used and token counts**.
 
 ## Content versioning (undo the AI)

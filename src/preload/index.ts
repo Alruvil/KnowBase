@@ -40,8 +40,12 @@ const api = {
   setModel: (model: string): Promise<string> => ipcRenderer.invoke('settings:set-model', model),
 
   // --- AI agent ---
-  agentSend: (requestId: string, contextFolder: string, prompt: string): Promise<void> =>
-    ipcRenderer.invoke('agent:send', requestId, contextFolder, prompt),
+  agentSend: (
+    requestId: string,
+    contextFolder: string,
+    prompt: string,
+    priorAnswer?: string
+  ): Promise<void> => ipcRenderer.invoke('agent:send', requestId, contextFolder, prompt, priorAnswer),
   agentCancel: (requestId: string): Promise<void> =>
     ipcRenderer.invoke('agent:cancel', requestId),
   onAgentEvent: (callback: (payload: AgentEventPayload) => void): (() => void) => {

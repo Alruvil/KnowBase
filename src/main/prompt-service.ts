@@ -73,3 +73,15 @@ export async function composeSystemPrompt(root: string, contextFolder: string): 
   }
   return parts.join('\n\n')
 }
+
+/**
+ * Prepends the AI's last answer as explicit context ahead of a new prompt, when
+ * the user has opted into it (the console's "consider last answer" toggle).
+ * Keeps calls stateless — this is just text folded into one self-contained
+ * prompt, not session memory — while sparing the user from re-explaining what
+ * they're replying to.
+ */
+export function withPriorAnswer(prompt: string, priorAnswer?: string): string {
+  if (!priorAnswer?.trim()) return prompt
+  return `For context, here is your previous answer:\n"""\n${priorAnswer}\n"""\n\nFollow-up: ${prompt}`
+}

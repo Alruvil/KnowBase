@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AgentEventPayload, DiffFile } from '@shared/types'
 import { detectMention } from '../lib/mention'
+import { renderMarkdownToHtml } from '../lib/render-markdown'
 
 /** A prompt to send automatically once the console is scoped to `folder`. */
 export interface PendingPrompt {
@@ -71,8 +72,13 @@ export default function Console({
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
   const [running, setRunning] = useState(false)
+  const [inputHeight, setInputHeight] = useState(72)
   const [mention, setMention] = useState<{ start: number; query: string } | null>(null)
   const [mentionIdx, setMentionIdx] = useState(0)
+  // Off by default; carries the last answer's text into the next call as
+  // explicit context when on, so you don't have to re-explain what you're
+  // replying to. Resets when you switch scope — new topic, no stale context.
+  const [includeLastAnswer, setIncludeLastAnswer] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const runningReq = useRef<string | null>(null)
@@ -86,6 +92,13 @@ export default function Console({
         .filter((f) => f.toLowerCase().includes(mention.query.toLowerCase()))
         .slice(0, MAX_MENTIONS)
     : []
+
+  // The AI's last actual answer — the final 'assistant' bubble, which already
+  // excludes 'tool' log entries (those are a separate role) and any earlier
+  // "let me check this" preamble bubble split off before a tool call.
+  const lastAnswer = [...messages].reverse().find((m) => m.role === 'assistant')?.text
+
+  useEffect(() => setIncludeLastAnswer(false), [contextFolder])
 
   // Load the project's saved conversation when the project changes.
   useEffect(() => {
@@ -196,7 +209,12 @@ export default function Console({
     setMessages((prev) => [...prev, { id: uid(), role: 'user', text }])
     setRunning(true)
     try {
-      await window.api.agentSend(requestId, contextFolder, text)
+      await window.api.agentSend(
+        requestId,
+        contextFolder,
+        text,
+        includeLastAnswer ? lastAnswer : undefined
+      )
     } finally {
       if (runningReq.current === requestId) {
         runningReq.current = null
@@ -220,6 +238,20 @@ export default function Console({
     runningReq.current = null
     assistantId.current = null
     setRunning(false)
+  }
+
+  const dragInputHeight = (e: React.MouseEvent): void => {
+    e.preventDefault()
+    const startY = e.clientY
+    const startHeight = inputHeight
+    const onMove = (ev: MouseEvent): void =>
+      setInputHeight(Math.min(320, Math.max(36, startHeight - (ev.clientY - startY))))
+    const onUp = (): void => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
@@ -346,6 +378,14 @@ export default function Console({
                 </span>
               </span>
             </div>
+          ) : m.role === 'assistant' ? (
+            <div key={m.id} className="console-msg assistant">
+              <span className="console-role">{roleGlyph(m.role)}</span>
+              <span
+                className="console-text markdown"
+                dangerouslySetInnerHTML={{ __html: renderMarkdownToHtml(m.text) }}
+              />
+            </div>
           ) : (
             <div key={m.id} className={`console-msg ${m.role}`}>
               <span className="console-role">{roleGlyph(m.role)}</span>
@@ -368,7 +408,13 @@ export default function Console({
           click a project level above.
         </div>
       ) : (
-        <div className="console-input-row">
+        <>
+          <div
+            className="console-input-resize"
+            title="Drag to resize"
+            onMouseDown={dragInputHeight}
+          />
+          <div className="console-input-row">
           {mention && matches.length > 0 && (
             <div className="mention-popup">
               {matches.map((f, i) => (
@@ -385,10 +431,22 @@ export default function Console({
               ))}
             </div>
           )}
+          <button
+            className={`console-toggle ${includeLastAnswer ? 'active' : ''}`}
+            disabled={!lastAnswer}
+            title={
+              lastAnswer
+                ? 'Include the AI’s last answer as context for this message'
+                : 'No previous answer yet to include'
+            }
+            onClick={() => setIncludeLastAnswer((v) => !v)}
+          >
+            ↩
+          </button>
           <textarea
             ref={inputRef}
             className="console-input"
-            rows={2}
+            style={{ height: inputHeight }}
             placeholder="Ask, or give instructions… @ to reference a file · Enter to send"
             value={input}
             onChange={onInputChange}
@@ -403,7 +461,8 @@ export default function Console({
               Send
             </button>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   )

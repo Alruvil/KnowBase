@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { composeSystemPrompt } from './prompt-service'
+import { composeSystemPrompt, withPriorAnswer } from './prompt-service'
 
 let root: string
 
@@ -32,5 +32,21 @@ describe('composeSystemPrompt', () => {
     expect(prompt).toContain('knowledge assistant')
     expect(prompt).toContain('BLOG RULE')
     expect(prompt).not.toContain('OPINION RULE')
+  })
+})
+
+describe('withPriorAnswer', () => {
+  it('returns the prompt unchanged when there is no prior answer', () => {
+    expect(withPriorAnswer('follow-up question')).toBe('follow-up question')
+    expect(withPriorAnswer('follow-up question', '')).toBe('follow-up question')
+    expect(withPriorAnswer('follow-up question', '   ')).toBe('follow-up question')
+  })
+
+  it('prepends the prior answer as context ahead of the new prompt', () => {
+    const result = withPriorAnswer('what about the second point?', 'Here are three points...')
+    const contextIdx = result.indexOf('Here are three points...')
+    const followUpIdx = result.indexOf('what about the second point?')
+    expect(contextIdx).toBeGreaterThan(-1)
+    expect(followUpIdx).toBeGreaterThan(contextIdx)
   })
 })

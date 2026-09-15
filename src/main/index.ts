@@ -15,6 +15,7 @@ import {
   type AuthConfig
 } from './settings'
 import { runAgent } from './agent-service'
+import { withPriorAnswer } from './prompt-service'
 import { loadHistory, appendHistory, projectOf, type HistoryEntry } from './history-service'
 import { initLogger, logPath, log } from './logger'
 import * as gitService from './git-service'
@@ -134,8 +135,19 @@ function registerIpc(): void {
   // Streaming agent turn. Events are pushed to the renderer as `agent:event`.
   ipcMain.handle(
     'agent:send',
-    async (_e, requestId: string, contextFolder: string, prompt: string) => {
-      log('ipc', 'agent:send', { requestId, contextFolder, promptChars: prompt.length })
+    async (
+      _e,
+      requestId: string,
+      contextFolder: string,
+      prompt: string,
+      priorAnswer?: string
+    ) => {
+      log('ipc', 'agent:send', {
+        requestId,
+        contextFolder,
+        promptChars: prompt.length,
+        withPriorAnswer: !!priorAnswer
+      })
       const project = projectOf(contextFolder)
       const controller = new AbortController()
       agentRuns.set(requestId, controller)
@@ -144,7 +156,8 @@ function registerIpc(): void {
 
       // Snapshot content before the call so the AI's changes can be reviewed/reverted.
       // Scoped to this project, so a checkpoint here never sweeps up unrelated
-      // manual edits sitting dirty in another project.
+      // manual edits sitting dirty in another project. Uses the clean prompt (not
+      // the prior-answer-prefixed one) so the commit summary stays short.
       await gitService.checkpointBeforeCall(rootDir, prompt, project).catch(() => {})
 
       let assistantText = ''
@@ -152,7 +165,7 @@ function registerIpc(): void {
         await runAgent({
           root: rootDir,
           contextFolder,
-          prompt,
+          prompt: withPriorAnswer(prompt, priorAnswer),
           requestId,
           signal: controller.signal,
           emit: (event) => {

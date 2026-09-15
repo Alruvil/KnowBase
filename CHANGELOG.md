@@ -6,6 +6,20 @@ versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Project-scoped content versioning.** Save/Revert/View-diff (and the AI's pre-call
+  checkpoint) now operate on the project you're currently looking at, not the whole content
+  repo — switching to a different project while the AI is still working in another no longer
+  risks reverting or exposing unrelated pending edits.
+- **Recency-ordered `@`-mention dropdown.** Files are listed most-recently-used first (opened
+  or `@`-referenced), not alphabetically.
+- **↩ Consider last answer** toggle in the console — folds the AI's last reply into the next
+  message as context, without reintroducing session/state tracking.
+- **Rendered markdown in assistant replies** — bold, links, lists, and code now display as
+  formatted text in the console instead of raw markdown syntax.
+- **Resizable console input** — a drag handle above the input box, taller default height.
+
 ## [0.3.0] - 2026-07-28
 
 ### Added
